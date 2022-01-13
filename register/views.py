@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import unicode_literals
+import jwt
+
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.models import User
 from django.http import request, response
@@ -18,6 +19,7 @@ from django.shortcuts import redirect;
 from rest_framework.views import APIView
 from rest_framework import status
 from copy import copy
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -58,7 +60,7 @@ class UserSignupAPIView(APIView):
             
 
 class LoginApiView(APIView):
-
+    # permission_classes = (IsAuthenticated,)
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
@@ -71,17 +73,21 @@ class LoginApiView(APIView):
                 if user:
                     admin_serializer = UserSerializer(user)
                     data = admin_serializer.data
+                    new_data = {}
+                    new_data['data'] = data
+                    encoded_jwt = jwt.encode({'email': email}, 'secret', algorithm='HS256')
+                    new_data['token'] = encoded_jwt
                     return Response(
                     get_response_dict(
                         LOGIN_SUCCESS,
-                        data
+                        new_data,
                     ),
                     status=status.HTTP_200_OK
                 )
             except:
                 return Response(
                     get_response_dict(
-                        UNAUTHORIZED_LOGIN,
+                        UNAUTHORIZED_LOGIN
                     ),
                     status=status.HTTP_401_UNAUTHORIZED
                 )
