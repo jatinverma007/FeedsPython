@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render
 from Feeds.models import Feeds
+from register.models import AppUser, User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -22,6 +23,40 @@ class FeedsListApiView(APIView):
         feeds = Feeds.objects.all()
         serializer = FeedsSerializer(feeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class FeedsCreateApiView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        userEmail = data.get('email')
+        profile = AppUser.objects.get(email=userEmail)
+        newdata = request.data.copy()
+        newdata['profile'] = profile.id
+        serializer = FeedsSerializer(data=newdata)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FeedsUpdateApiView(APIView):
+    def get_object(self):
+        pk = int(self.kwargs.get('pk'))
+        try:
+            feeds = Feeds.objects.get(id=pk)
+        except Feeds.DoesNotExist:
+            raise NotFound()
+        # self.check_object_permissions(self.request, feeds)
+        return feeds
+
+    def patch(self, request, *args, **kwargs):
+        feeds = self.get_object()
+        serializer = FeedsSerializer(data=request.data, instance=feeds, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 STATUS_CODE = "code"

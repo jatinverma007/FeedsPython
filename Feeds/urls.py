@@ -7,5 +7,5 @@ from .views import (
 )
 
 urlpatterns = [
-    url(r'^feeds/$', FeedsListApiView.as_view(), name='feeds'),
+    # url(r'^feeds/$', FeedsListApiView.as_view(), name='feeds'),
 ]
