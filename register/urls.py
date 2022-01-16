@@ -6,7 +6,7 @@ from .views import (
 )
 
 from Feeds.views import (
-    FeedsCommentApiView, FeedsLikeApiView, FeedsListApiView, FeedsCreateApiView, FeedsUpdateApiView
+    FeedsCommentApiView, FeedsDetailApiView, FeedsLikeApiView, FeedsListApiView, FeedsCreateApiView, FeedsUpdateApiView
 )
 urlpatterns = [
     # url('home/', users_views.home, name='home'),
@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^login/$', LoginApiView.as_view(), name='login'),
     url(r'^feeds/$', FeedsListApiView.as_view(), name='feeds'),
     url(r'^feeds/create/$', FeedsCreateApiView.as_view(), name='feeds-create'),
+    url(r'^feeds/detail/(?P<pk>[0-9]+)/$', FeedsDetailApiView.as_view()),
     url(r'^feeds/(?P<pk>[0-9]+)/$', FeedsUpdateApiView.as_view()),
     url(r'^comment/$', FeedsCommentApiView.as_view()),
     url(r'^like/$', FeedsLikeApiView.as_view())

@@ -26,6 +26,35 @@ class FeedsListApiView(APIView):
         serializer = FeedsSerializer(feeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class FeedsDetailApiView(APIView):
+    def get_object(self):
+        pk = int(self.kwargs.get('pk'))
+        try:
+            feeds = Feeds.objects.get(id=pk)
+        except Feeds.DoesNotExist:
+            raise NotFound()
+        return feeds
+    
+    def get_object_like(self):
+        pk = int(self.kwargs.get('pk'))
+        try:
+            feeds = Like.objects.get(feed=self.get_object())
+        except Feeds.DoesNotExist:
+            raise NotFound()
+        return feeds
+    
+    def get(self, request, *args, **kwargs):
+        feeds = self.get_object()
+        serializer = FeedsSerializer(feeds)
+        all_data = {}
+        all_data['data'] = serializer.data
+        # allLikes = Like.objects.all()
+        # likeForParticularPost = 0
+        # all_data['all_like'] = self.get_object_like().count()
+        return Response(all_data, status=status.HTTP_200_OK)
+
+
+
 class FeedsCreateApiView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
