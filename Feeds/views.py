@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render
-from Feeds.models import Feeds
+from Feeds.models import Comments, Feeds, Like
 from register.models import AppUser, User
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,9 +11,11 @@ from rest_framework.exceptions import (
     NotFound,
 )
 from .serializers import (
+    CommentsSerializer,
     FeedsSerializer,
 )
 from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
 
 
 
@@ -45,7 +47,6 @@ class FeedsUpdateApiView(APIView):
             feeds = Feeds.objects.get(id=pk)
         except Feeds.DoesNotExist:
             raise NotFound()
-        # self.check_object_permissions(self.request, feeds)
         return feeds
 
     def patch(self, request, *args, **kwargs):
@@ -56,6 +57,41 @@ class FeedsUpdateApiView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FeedsCommentApiView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        feedID = data.get('feedId')
+        userEmail = data.get('email')
+        comment = data.get('comment')
+        try:
+            currentUser = AppUser.objects.get(email=userEmail)
+        except AppUser.DoesNotExist:
+            raise NotFound()
+        try:
+            currentFeed = Feeds.objects.get(id=feedID)
+        except Feeds.DoesNotExist:
+            raise NotFound()
+        comment = Comments(feed = currentFeed, username = currentUser, comment = comment, comment_date = datetime.now())
+        comment.save()
+        return Response("Success", status=status.HTTP_200_OK)
+
+class FeedsLikeApiView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        feedID = data.get('feedId')
+        userEmail = data.get('email')
+        try:
+            currentUser = AppUser.objects.get(email=userEmail)
+        except AppUser.DoesNotExist:
+            raise NotFound()
+        try:
+            currentFeed = Feeds.objects.get(id=feedID)
+        except Feeds.DoesNotExist:
+            raise NotFound()
+        like = Like(feed = currentFeed, user = currentUser)
+        like.save()
+        return Response("Success", status=status.HTTP_200_OK)
 
 
 
